@@ -1,0 +1,36 @@
+# 依赖与构建产物
+build/
+.dart_tool/
+.gradle/
+*.apk
+*.aab
+*.jks
+*.keystore
+
+# 本地私有配置（不入库）
+*.private.dart
+.env
+.env.*
+config.local.*
+webchat_bridge.local.json
+
+# 个人数据
+memories/
+exports/
+backups/
+*.db
+*.sqlite
+
+# 编辑器与系统
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# 日志与临时文件
+*.log
+*.tmp
+tmp/
+__pycache__/
+*.pyc

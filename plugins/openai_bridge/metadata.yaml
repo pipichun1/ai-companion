@@ -1,0 +1,13 @@
+name: openai_bridge
+display_name: OpenAI 兼容桥
+short_desc: 把 AstrBot 会话暴露成 OpenAI 兼容接口，供第三方前端对接
+desc: >-
+  注册 /v1/chat/completions 与 /v1/models，让 NextChat、LobeChat 等现成聊天前端
+  直接连到 AstrBot。人格、记忆、上下文压缩仍由 AstrBot 负责。
+help: 访问路径为 /api/v1/plugins/extensions/v1/chat/completions
+version: 0.1.0
+author: community
+astrbot_version: ">=4.29.0"
+tags:
+  - 接口
+  - 桥接

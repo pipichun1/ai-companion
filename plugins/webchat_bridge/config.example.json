@@ -1,0 +1,19 @@
+{
+  "enabled": true,
+  "prefixes": ["webchat:"],
+  "persona_file": "companion-persona.md",
+  "memory_files": ["memory-1.md"],
+  "marker": "【私人记忆】",
+  "sessions": {
+    "webchat:FriendMessage:webchat!you!main": {
+      "name": "默认会话",
+      "persona_file": "companion-persona.md",
+      "memory_files": ["memory-1.md"]
+    },
+    "webchat:FriendMessage:webchat!you!other": {
+      "name": "另一个角色",
+      "persona_file": "other-persona.md",
+      "memory_files": []
+    }
+  }
+}

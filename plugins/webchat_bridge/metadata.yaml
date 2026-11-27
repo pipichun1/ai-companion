@@ -1,0 +1,14 @@
+name: webchat_bridge
+display_name: WebChat 人格桥接
+short_desc: 让 WebChat 的每个新会话都继承指定人格与记忆文件
+desc: >-
+  AstrBot 的 ChatUI 每次新建对话都会生成新的 umo，导致人格绑定与记忆注入失效。
+  本插件按 umo 前缀（默认 webchat:）在请求前把人格与记忆前置进系统提示词，
+  使任意新会话都保持同一身份。不改数据库，卸载即恢复。
+help: 在 AstrBot 数据目录下编辑 webchat_bridge.json，指定 persona_file 与 memory_files
+version: 1.0.0
+author: community
+astrbot_version: ">=4.0.0"
+tags:
+  - 人格
+  - 提示词
