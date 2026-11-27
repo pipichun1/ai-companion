@@ -29,6 +29,16 @@ AstrBot 接入  人格、记忆、上下文压缩、多会话托管
 
 ---
 
+## 先看这个
+
+新手从 [`docs/getting-started.md`](docs/getting-started.md) 开始：
+
+```
+想先试试 ───────────► 路线 A：装 App + 填模型 key，不用服务器
+想要人格与记忆 ─────► 路线 B：自己搭 AstrBot + 装两个插件
+没有域名怎么办 ─────► 文档里有 Cloudflare Tunnel 等三种方案
+```
+
 ## 两种用法
 
 **直连模型（最轻）**
