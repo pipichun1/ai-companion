@@ -29,6 +29,8 @@ AstrBot 接入  人格、记忆、上下文压缩、多会话托管
 
 ---
 
+> 想让 AI agent 陪着一个不懂技术的人从头装好？给它读 [`docs/onboarding.md`](docs/onboarding.md)。
+
 ## 先看这个
 
 新手从 [`docs/getting-started.md`](docs/getting-started.md) 开始：
