@@ -23,6 +23,7 @@ class AppPrefs extends ChangeNotifier {
   double bgOpacity = 0.45;
   int fontScaleIdx = 1; // 0小 1中 2大
   bool glassComposer = false;
+  bool selfDress = true;
   double glassSigma = 22; // 输入栏毛玻璃
   int customBg = 0xFF0E1420;
   int customAccent = 0xFF3D7EFF;
@@ -56,6 +57,7 @@ class AppPrefs extends ChangeNotifier {
     hapticsEnabled = p.getBool('ui_haptics') ?? true;
     chatVibrate = p.getBool('ui_chat_vibrate') ?? true;
     bubbleOpacity = p.getDouble('ui_bubble_opacity') ?? 0.95;
+    selfDress = p.getBool('ui_self_dress') ?? true;
     bgOpacity = p.getDouble('ui_bg_opacity') ?? 0.45;
     fontScaleIdx = p.getInt('ui_font_scale') ?? 1;
     glassComposer = p.getBool('ui_glass_composer') ?? false;
@@ -108,6 +110,13 @@ class AppPrefs extends ChangeNotifier {
   /// 主页独立配色；null 表示跟随全局
   Palette get homePalette =>
       homePaletteId == null ? palette : paletteById(homePaletteId);
+
+  Future<void> setSelfDress(bool v) async {
+    selfDress = v;
+    final p = await SharedPreferences.getInstance();
+    await p.setBool('ui_self_dress', v);
+    notifyListeners();
+  }
 
   Future<void> setHapticsEnabled(bool v) async {
     hapticsEnabled = v;

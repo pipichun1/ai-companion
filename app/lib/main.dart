@@ -20,6 +20,7 @@ import 'home_page.dart';
 import 'img_util.dart';
 import 'prefs.dart';
 import 'settings_page.dart';
+import 'self_actions.dart';
 import 'settings_store.dart';
 import 'theme.dart';
 import 'themed_route.dart';
@@ -559,6 +560,24 @@ class _ChatPageState extends State<ChatPage>
     _toastEntry = null;
     ToastBar.show(text);
   }
+  /// 执行她的小动作：一天一次，只换当前会话
+  Future<bool> _runSelfAction(SelfAction act) async {
+    if (await dressedToday(widget.conv)) return false;
+    final path = await applySelfAction(conv: widget.conv, action: act);
+    if (path == null) return false;
+    await markDressed(widget.conv);
+    if (mounted) {
+      setState(() {
+        if (act.kind == 'avatar') {
+          _avatarPath = path;
+        } else {
+          _bgPath = path;
+        }
+      });
+    }
+    Haptics.light();
+    return true;
+  }
   Future<void> _copyText(Msg m) async {
     await Clipboard.setData(ClipboardData(text: m.text));
     Haptics.light();
@@ -803,7 +822,14 @@ class _ChatPageState extends State<ChatPage>
       token: direct ? (widget.apiKey ?? '') : s.token,
       conv: widget.conv,
       model: direct ? widget.model : null,
-      systemNote: direct ? widget.systemNote : null,
+      systemNote: direct
+          ? [
+              if (widget.systemNote != null &&
+                  widget.systemNote!.trim().isNotEmpty)
+                widget.systemNote!.trim(),
+              kAbilitiesNote,
+            ].join('\n\n')
+          : null,
       direct: direct,
     );
     try {
@@ -827,8 +853,18 @@ class _ChatPageState extends State<ChatPage>
         reply.text = '（没有收到回复）';
         reply.status = MsgStatus.failed;
       } else {
+        // 解析她的小动作（换头像 / 换背景），标记不入正文
+        SelfAction? act;
+        final cleaned = stripSelfActions(full, (a) => act ??= a);
+        var shown = cleaned.isEmpty ? full : cleaned;
+        if (act != null && AppPrefs.instance.selfDress) {
+          final applied = await _runSelfAction(act!);
+          if (applied) {
+            shown = '$shown\n\n（她换了个${act!.kind == 'avatar' ? '头像' : '背景'}）';
+          }
+        }
         setState(() {
-          reply.text = full;
+          reply.text = shown;
           reply.status = MsgStatus.done;
         });
         Haptics.herMessage();

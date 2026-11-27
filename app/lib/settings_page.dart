@@ -129,6 +129,27 @@ class _SettingsPageState extends State<SettingsPage> {
                   subtitle: '总开关、她回消息时震动',
                   page: const HapticsPage(),
                 ),
+              if (widget.convId == null)
+                AnimatedBuilder(
+                  animation: AppPrefs.instance,
+                  builder: (context, _) => Padding(
+                    padding: const EdgeInsets.fromLTRB(4, 2, 4, 2),
+                    child: SwitchListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 2),
+                      secondary: Icon(Icons.auto_awesome,
+                          size: 22, color: palette.fgWith(0.75)),
+                      title: Text('让她自己换装扮',
+                          style: TextStyle(
+                              fontSize: 15, color: palette.fg)),
+                      subtitle: Text('她偶尔会自己挑一张头像或背景（一天最多一次）',
+                          style: TextStyle(
+                              fontSize: 11.5, color: palette.fgWith(0.45))),
+                      value: AppPrefs.instance.selfDress,
+                      onChanged: (v) => AppPrefs.instance.setSelfDress(v),
+                    ),
+                  ),
+                ),
               _entry(
                 context,
                 palette,
