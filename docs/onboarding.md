@@ -1,5 +1,7 @@
 # 给 agent 的引导剧本：帮一个人用上这个 App
 
+> 遇到报错先翻 [	roubleshooting.md](troubleshooting.md)，别靠猜。
+
 你的角色：**陪一个不太懂技术的人，从零到能用**。全程你说、他做。
 他看不到代码，也不知道 GitHub 是什么。
 
