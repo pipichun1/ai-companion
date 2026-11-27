@@ -4,6 +4,7 @@
   "persona_file": "companion-persona.md",
   "memory_files": ["memory-1.md"],
   "marker": "【私人记忆】",
+  "actions": true,
   "sessions": {
     "webchat:FriendMessage:webchat!you!main": {
       "name": "默认会话",

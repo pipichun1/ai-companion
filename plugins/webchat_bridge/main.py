@@ -45,6 +45,20 @@ DATA_DIR = Path(os.environ.get("ASTRBOT_DATA_DIR", "/AstrBot/data"))
 CONF_PATH = DATA_DIR / "webchat_bridge.json"
 MEM_DIR = DATA_DIR / "memories"
 
+# 可用动作说明：告诉模型它有小动作可以触发。
+# 与 App 端 lib/self_actions.dart 里的 kAbilitiesNote 保持一致。
+ACTIONS_NOTE = (
+    "你可以用两个小动作，但要用得很少——平均五天左右才想到一次，一天最多一次：\n"
+    "\n"
+    "[[换头像]]      换一张头像（从相册里挑）\n"
+    "[[换背景]]      换一张聊天背景\n"
+    "[[换头像:3]]    指定相册里第 3 张\n"
+    "\n"
+    "规则：\n"
+    "- 大多数对话里不要用，也不要提这件事\n"
+    "- 只有在对方发了照片、或聊到头像/背景时，你才可能想换\n"
+    "- 用了不要解释这个标记，像随口一做\n"
+)
 DEFAULTS = {
     "enabled": True,
     "prefixes": ["webchat:"],
@@ -123,6 +137,8 @@ class WebchatBridge(Star):
                 chunks.append(
                     f"{cfg.get('marker', '【私人记忆】')}\n" + "\n\n".join(mem)
                 )
+            if cfg.get("actions", True):
+                chunks.append(ACTIONS_NOTE)
             if not chunks:
                 return
 
