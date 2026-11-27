@@ -40,7 +40,7 @@ flutter build apk --release \
 | `DEFAULT_BASE` | 首次启动的服务器地址 | 空，用户自己填 |
 | `DEFAULT_TOKEN` | 首次启动的令牌 | 空，用户自己填 |
 
-> ⚠️ 升级已有安装时，`APP_ID` 必须与原包名一致（例如 `top.xdafeiyu.dafeiyu_app`），
+> ⚠️ 升级已有安装时，`APP_ID` 必须与原包名一致（例如 `com.example.myapp`），
 > 否则会装成两个 App、数据不互通。
 
 ## 注意事项
