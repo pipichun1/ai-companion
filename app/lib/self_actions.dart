@@ -76,26 +76,34 @@ Future<String?> applySelfAction({
   final items = await HistoryDb.albumList();
   if (items.isEmpty) return null;
 
-  // 相册按时间倒序（最近的在前），优先用最近的图
-  final usable = items.where((e) {
+  // 相册按时间倒序（最近的在前）
+  var usable = items.where((e) {
     final p = e.path;
     return p != null && File(p).existsSync();
   }).toList();
   if (usable.isEmpty) return null;
 
+  final old = await HistoryDb.convGet(conv);
+  if (old == null) return null;
+
+  // 排除当前已经在用的那张，避免"连着换同一个"
+  final current = action.kind == 'avatar' ? old.avatarPath : old.bgPath;
+  final withoutCurrent =
+      usable.where((e) => e.path != current).toList();
+  if (withoutCurrent.isNotEmpty) usable = withoutCurrent;
+
   AlbumItem pick;
   final idx = action.index;
   if (idx != null && idx >= 1 && idx <= usable.length) {
     pick = usable[idx - 1];
+  } else if (usable.length == 1) {
+    pick = usable.first;
   } else {
-    // 大多数时候用最近的一张，偶尔退一张，避免每次都一样
-    final roll = DateTime.now().millisecond % 4;
-    final pos = roll == 0 && usable.length > 1 ? 1 : 0;
-    pick = usable[pos];
+    // 在最近几张里随机，别每次都同一张
+    final pool = usable.length > 6 ? usable.sublist(0, 6) : usable;
+    final seed = DateTime.now().microsecondsSinceEpoch;
+    pick = pool[seed % pool.length];
   }
-
-  final old = await HistoryDb.convGet(conv);
-  if (old == null) return null;
 
   final updated = Conversation(
     conv: old.conv,

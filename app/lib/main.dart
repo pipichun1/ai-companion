@@ -356,6 +356,8 @@ class _ChatPageState extends State<ChatPage>
   int? _highlightId;
   bool _offline = false;
   double _dragDx = 0;
+  bool _userAskedDress = false;
+  String? _askedKind;
   int _menuSession = 0;
   int _lastMenuState = -1;
   String? _doneAction;
@@ -381,6 +383,9 @@ class _ChatPageState extends State<ChatPage>
     // 进页面就先带上这个会话的外观，不然会显示默认
     _avatarPath = widget.avatarPath;
     _bgPath = widget.bgPath;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _maybeSpontaneousDress();
+    });
     _paletteId = widget.paletteId;
     _customColors = widget.customColors;
     _boot();
@@ -592,19 +597,49 @@ class _ChatPageState extends State<ChatPage>
     }
     return null;
   }
-  Future<bool> _runSelfAction(SelfAction act) async {
-    if (await dressedToday(widget.conv)) return false;
+  /// 一时兴起：打开会话时有两成概率"她已经偷偷换过了"
+  Future<void> _maybeSpontaneousDress() async {
+    if (!AppPrefs.instance.selfDress) return;
+    if (await dressedToday(widget.conv)) return;
+    if (DateTime.now().millisecond % 5 != 0) return; // 20%
 
-    // 她没指定第几张时，把相册缩略图发过去让她自己看、自己挑
-    var action = act;
-    if (action.index == null) {
+    final kind = DateTime.now().second % 3 == 0 ? 'background' : 'avatar';
+    final path = await applySelfAction(
+        conv: widget.conv, action: SelfAction(kind));
+    if (path == null || !mounted) return;
+    await markDressed(widget.conv);
+
+    final label = kind == 'avatar' ? '头像' : '背景';
+    final note = Msg(
+        text: '（她换了个$label）', mine: false, time: DateTime.now());
+    setState(() {
+      if (kind == 'avatar') {
+        _avatarPath = path;
+      } else {
+        _bgPath = path;
+      }
+      _msgs.add(note);
+    });
+    try {
+      await HistoryDb.insert(widget.conv, note);
+    } catch (_) {}
+  }
+  Future<bool> _runSelfAction(SelfAction act, {bool explicit = false}) async {
+    if (!explicit && await dressedToday(widget.conv)) return false;
+
+    // 用户明确要求时：忽略她猜的序号，直接随机挑（快，也不容易重复）
+    var action = explicit && act.index != null
+        ? SelfAction(act.kind)
+        : act;
+    if (action.index == null && !explicit) {
       final picked = await _askWhichImage(action.kind);
       if (picked != null) action = SelfAction(action.kind, index: picked);
     }
 
     final path = await applySelfAction(conv: widget.conv, action: action);
     if (path == null) return false;
-    await markDressed(widget.conv);
+    // 你明确要求的换装不占用"一天一次"的额度，留给她自己起意时用
+    if (!explicit) await markDressed(widget.conv);
     if (mounted) {
       setState(() {
         if (act.kind == 'avatar') {
@@ -802,6 +837,12 @@ class _ChatPageState extends State<ChatPage>
       {String? imagePath, Msg? quoted}) async {
     final s = _settings;
     if (s == null || _sending) return;
+    _userAskedDress = RegExp(r'换(个|一|一下|张)?(头像|照片|背景)').hasMatch(text);
+    if (_userAskedDress) {
+      _askedKind = text.contains('背景') ? 'background' : 'avatar';
+    } else {
+      _askedKind = null;
+    }
 
     final userMsg = Msg(
       text: text,
@@ -896,10 +937,16 @@ class _ChatPageState extends State<ChatPage>
         SelfAction? act;
         final cleaned = stripSelfActions(full, (a) => act ??= a);
         var shown = cleaned.isEmpty ? full : cleaned;
+        // 你明确要求了，但她这次没写标记 —— 由 App 替你完成
+        if (act == null && _askedKind != null && AppPrefs.instance.selfDress) {
+          act = SelfAction(_askedKind!);
+        }
         if (act != null && AppPrefs.instance.selfDress) {
-          final applied = await _runSelfAction(act!);
+          // 同步执行：换好了再显示她说的话，避免"说换了但还没换"
+          final applied = await _runSelfAction(act!, explicit: _userAskedDress);
           if (applied) {
-            shown = '$shown\n\n（她换了个${act!.kind == 'avatar' ? '头像' : '背景'}）';
+            final label = act!.kind == 'avatar' ? '头像' : '背景';
+            shown = '$shown\n\n（她换了个$label）';
           }
         }
         setState(() {

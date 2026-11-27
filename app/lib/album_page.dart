@@ -39,20 +39,23 @@ class _AlbumPageState extends State<AlbumPage> {
   }
 
   Future<void> _upload() async {
-    final picked = await ImagePicker().pickImage(
-      source: ImageSource.gallery,
+    // 支持一次选多张
+    final picked = await ImagePicker().pickMultiImage(
       maxWidth: 2560,
       maxHeight: 2560,
       imageQuality: 92,
     );
-    if (picked == null) return;
-    final stored = await copyToAppDir(File(picked.path), prefix: 'album');
-    await HistoryDb.albumAdd(AlbumItem(
-      path: stored,
-      createdAt: DateTime.now(),
-      source: 'upload',
-    ));
+    if (picked.isEmpty) return;
+    for (final p in picked) {
+      final stored = await copyToAppDir(File(p.path), prefix: 'album');
+      await HistoryDb.albumAdd(AlbumItem(
+        path: stored,
+        createdAt: DateTime.now(),
+        source: 'upload',
+      ));
+    }
     await _load();
+    if (mounted) Haptics.light();
   }
 
   String _monthLabel(DateTime t) => '${t.year} 年 ${t.month} 月';
