@@ -1,0 +1,26 @@
+name: dafeiyu_app
+description: "大肥鱼 - 聊天客户端"
+publish_to: 'none'
+version: 1.33.1+84
+
+environment:
+  sdk: ^3.14.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  http: ^1.2.0
+  shared_preferences: ^2.2.0
+  path_provider: ^2.1.0
+  sqflite: ^2.3.0
+  path: ^1.9.0
+  image_picker: ^1.0.7
+  image: ^4.1.0
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
