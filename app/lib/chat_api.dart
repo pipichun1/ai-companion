@@ -153,30 +153,38 @@ class ChatApi {
 
   /// 预热连接：只为了让后续请求复用 TLS 连接
   /// 一次性取完整回复（不流式），让整段文字瞬间出现
-  Future<String> complete(String text, {String? imageBase64}) async {
+  Future<String> complete(String text,
+      {String? imageBase64, List<String>? images}) async {
+    final list = <String>[
+      if (imageBase64 != null) imageBase64,
+      ...?images,
+    ];
     final messages = <Map<String, dynamic>>[
+      if (direct && systemNote != null && systemNote!.trim().isNotEmpty)
+        {'role': 'system', 'content': systemNote!.trim()},
       {
         'role': 'user',
-        'content': imageBase64 == null
+        'content': list.isEmpty
             ? text
             : [
                 {'type': 'text', 'text': text},
-                {
-                  'type': 'image_url',
-                  'image_url': {'url': 'data:image/jpeg;base64,$imageBase64'},
-                },
+                for (final b in list)
+                  {
+                    'type': 'image_url',
+                    'image_url': {'url': 'data:image/jpeg;base64,$b'},
+                  },
               ],
       }
     ];
     final resp = await http
         .post(
-          Uri.parse('$base/api/v1/plugins/extensions/v1/chat/completions'),
+          Uri.parse(_url),
           headers: {
             'Authorization': 'Bearer $token',
             'Content-Type': 'application/json',
           },
           body: jsonEncode({
-            'model': 'se-se-yu',
+            'model': _model,
             'stream': false,
             'user': conv,
             'messages': messages,

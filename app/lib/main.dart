@@ -561,9 +561,48 @@ class _ChatPageState extends State<ChatPage>
     ToastBar.show(text);
   }
   /// 执行她的小动作：一天一次，只换当前会话
+  /// 把相册前几张发给她看，让她回答 [[换头像:N]]。
+  /// 拿不到序号时返回 null（退回默认挑图规则）。
+  Future<int?> _askWhichImage(String kind) async {
+    final shots = await albumCandidatesBase64(max: 6);
+    if (shots.length < 2) return null;
+
+    final st = await Settings.load();
+    final isDirect = widget.apiBase != null && widget.apiBase!.isNotEmpty;
+    final api = ChatApi(
+      base: isDirect ? widget.apiBase! : st.base,
+      token: isDirect ? (widget.apiKey ?? '') : st.token,
+      conv: widget.conv,
+      model: isDirect ? widget.model : null,
+      direct: isDirect,
+    );
+
+    final what = kind == 'avatar' ? '头像' : '聊天背景';
+    try {
+      final reply = await api.complete(
+        '这是相册里最近的 ${shots.length} 张图（顺序从 1 开始）。'
+        '你最想用哪一张当$what？只回答 [[换头像:序号]]，不要解释。',
+        images: shots,
+      );
+      final m = RegExp(r'\[\[\s*换(?:头像|背景)\s*[:：]\s*(\d+)').firstMatch(reply);
+      final idx = m == null ? null : int.tryParse(m.group(1)!);
+      if (idx != null && idx >= 1 && idx <= shots.length) return idx;
+    } catch (_) {
+      // 失败就走默认规则
+    }
+    return null;
+  }
   Future<bool> _runSelfAction(SelfAction act) async {
     if (await dressedToday(widget.conv)) return false;
-    final path = await applySelfAction(conv: widget.conv, action: act);
+
+    // 她没指定第几张时，把相册缩略图发过去让她自己看、自己挑
+    var action = act;
+    if (action.index == null) {
+      final picked = await _askWhichImage(action.kind);
+      if (picked != null) action = SelfAction(action.kind, index: picked);
+    }
+
+    final path = await applySelfAction(conv: widget.conv, action: action);
     if (path == null) return false;
     await markDressed(widget.conv);
     if (mounted) {

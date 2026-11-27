@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'history_db.dart';
+import 'img_util.dart';
 
 /// 「可用动作」说明：告诉模型它有哪些小动作可以触发。
 ///
@@ -111,4 +113,24 @@ Future<String?> applySelfAction({
   );;
   await HistoryDb.convUpsert(updated);
   return pick.path;
+}
+
+/// 取相册里最近若干张图，压缩后转成 base64，供"让她真的看一眼"用。
+Future<List<String>> albumCandidatesBase64({int max = 6}) async {
+  final items = await HistoryDb.albumList();
+  final out = <String>[];
+  for (final it in items) {
+    if (out.length >= max) break;
+    final p = it.path;
+    if (p == null) continue;
+    final f = File(p);
+    if (!await f.exists()) continue;
+    try {
+      final c = await compressForUpload(f);
+      out.add(base64Encode(await c.readAsBytes()));
+    } catch (_) {
+      // 单张失败不影响其它
+    }
+  }
+  return out;
 }

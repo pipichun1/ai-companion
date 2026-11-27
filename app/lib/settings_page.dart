@@ -20,7 +20,7 @@ import 'prefs.dart';
 import 'settings_store.dart';
 import 'theme.dart';
 
-const kAppVersion = '1.33.1 (84)';
+const kAppVersion = '1.34.1 (87)';
 
 /// 设置首页：分组入口
 class SettingsPage extends StatefulWidget {
